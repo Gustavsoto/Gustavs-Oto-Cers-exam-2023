@@ -1,10 +1,31 @@
 import {createRouter, createWebHistory} from 'vue-router'
+import { useAuthStore } from '../stores/auth'
+import Login from '../views/Login.vue'
+import Songs from '../views/Songs.vue'
+import Albums from '../views/Albums.vue'
+import About from '../views/About.vue'
 
+const routes = [
+    {
+        path: '/login', 
+        component: Login
+    },
+    {
+        path: '/',
+        component: Songs
+    },
+    {
+        path: '/albums',
+        component: Albums
+    },
+    {
+        path: '/about',
+        component: About
+    }
+]
 const router = createRouter({
     history: createWebHistory(),
-    routes : [
-
-    ]
+    routes
 })
 
 // LV
@@ -17,8 +38,14 @@ const router = createRouter({
 // argument "to" stores the address where we want to navigate/go
 // argument "from" stores the address from where we're coming from
 
-router.beforeEach((to, from) => {
-
-})
+router.beforeEach((to, from, next) => {
+    if (!useAuthStore.authenticated && to.path !== '/login') {
+        router.push('/login');
+    } else if (useAuthStore.authenticated && to.path === '/login') {
+        next('/');
+    } else {
+        next();
+    }
+});
 
 export default router
