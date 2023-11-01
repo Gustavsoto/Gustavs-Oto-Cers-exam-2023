@@ -1,32 +1,33 @@
 <script>
-    import { useAuthStore } from './stores/auth.js'
-    import NavigationComponent from '@/components/NavigationComponent.vue';
+import { useAuthStore } from './stores/auth.js'
+import NavigationComponent from '@/components/NavigationComponent.vue';
 
-    export default {
-        components: {
-    NavigationComponent
-},
-        data() {
-            return {
-                useAuthStore,
-            }
+export default {
+    components: {
+        NavigationComponent
+    },
+    computed: {
+        loggedIn() {
+        const store = useAuthStore();
+        return store.is_authenticated ?? store.authenticated;
         }
     }
+}
 </script>
 <template>
     <!--  HEADER  -->
-    <Header v-if="useAuthStore.authenticated"></Header>
+    <Header v-if="loggedIn"></Header>
     <!--  HEADER END  -->
 
     <!--  BODY  -->
     <div id="section-body">
-        <NavigationComponent v-if="useAuthStore.authenticated"/>
+        <NavigationComponent v-if="loggedIn"/>
         <router-view class="section-router"></router-view>
     </div>
     <!--  BODY END  -->
 
     <!--  PLAYER  -->
-    <div id="section-player"  v-if="useAuthStore.authenticated" >
+    <div id="section-player"  v-if="loggedIn" >
         <AudioPlayer/>
     </div>
     <!--  PLAYER END  -->

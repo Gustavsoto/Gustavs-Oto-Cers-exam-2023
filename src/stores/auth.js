@@ -20,28 +20,30 @@ export const useAuthStore = defineStore('authentication', {
     },
 
     // ACTIONS METODES
-    setUserData(name, surname, code) {
-        this.user.name = name;
-        this.user.surname = surname;
-        this.user.code = code;
-    },
-    authenticate(email, password) {
-        if(email === "gustavsoto.cers@va.lv" && password === "123456"){
-            localStorage.authenticated = true;
-            this.authenticated = true;
-            router.push('/');
-        }
-    },
-    logout() {
-        localStorage.clear();
-        this.authenticated = false;
-        router.push('/login');
-    },
-    toggleFavorite(songID) {
-        if(this.user.favorite_songs.indexOf(songID) !== -1){
-            this.user.favorite_songs.splice(this.user.favorite_songs.indexOf(songID), 1);
-        } else {
-            this.user.favorite_songs.push(songID);
-        }
-    },
+    actions: {
+        setUserData(name, surname, code) {
+            this.user.name = name;
+            this.user.surname = surname;
+            this.user.code = code;
+        },
+        authenticate(email, password) {
+            if(email === "gustavsoto.cers@va.lv" && password === "123456"){
+                localStorage.authenticated = true;
+                this.authenticated = true;
+                router.push('/');
+            }
+        },
+        logout() {
+            localStorage.clear();
+            this.authenticated = false;
+            router.push('/login');
+        },
+        toggleFavorite(songID) {
+            if(this.user.favorite_songs.indexOf(songID) !== -1){
+                this.user.favorite_songs.splice(this.user.favorite_songs.indexOf(songID), 1);
+            } else {
+                this.user.favorite_songs.push(songID);
+            }
+        },
+    }
 })
