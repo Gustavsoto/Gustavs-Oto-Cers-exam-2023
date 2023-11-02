@@ -15,7 +15,7 @@
           <th id="th-id">#</th>
           <th id="th-title" @click="sortBy('title')" :class="{ active: sortColumn === 'title' }">
             Title
-            <IconCaretUp :class="{ 'flip-vertical': sortColumn === 'title' && titleSortDirection === 'desc'}" v-if="sortColumn === 'title'" />
+            <IconCaretUp :class="{ 'flip-vertical': sortColumn === 'title' && sortDirections.title === 'desc'}" v-if="sortColumn === 'title'" />
           </th>
           <th id="th-artist">Artist</th>
           <th id="th-album">Album</th>
@@ -25,10 +25,10 @@
             :class="{ active: sortColumn === 'duration' }"
           >
             Duration
-            <IconCaretUp :class="{ 'flip-vertical': sortColumn === 'duration' && durationSortDirection === 'desc' }" v-if="sortColumn === 'duration'" />
+            <IconCaretUp :class="{ 'flip-vertical': sortColumn === 'duration' && sortDirections.duration === 'desc' }" v-if="sortColumn === 'duration'" />
           </th>
         </tr>
-        <tr class="song" v-for="(song, index) in sortedSongs" :key="song.id" @dblclick="selectSong(song)">
+        <tr class="song" v-for="(song, index) in filteredAndSortedSongs" :key="song.id" @dblclick="selectSong(song)">
           <td id="td-index">
             <IconPlay />
             <span id="txt-index">{{ index + 1 }}</span>
@@ -65,7 +65,7 @@ export default {
     return {
       searchText: '',
       show_favorites: false,
-      sortColumn: '', // Default sorting column
+      sortColumn: '',
       SongsData: songsData,
       sortDirections: {
         title: 'asc',
@@ -74,8 +74,9 @@ export default {
     };
   },
   computed: {
-    sortedSongs() {
-      return this.sortSongs(this.sortColumn, this.sortDirections[this.sortColumn]);
+    filteredAndSortedSongs() {
+      let filteredSongs = this.filterSongs(this.SongsData, this.searchText);
+      return this.sortSongs(filteredSongs, this.sortColumn, this.sortDirections[this.sortColumn]);
     },
   },
   methods: {
@@ -85,8 +86,15 @@ export default {
     toggleFavorites() {
       this.show_favorites = !this.show_favorites;
     },
-    sortSongs(column, direction) {
-      let sortedSongs = [...this.SongsData];
+    filterSongs(songs, searchText) {
+      return songs.filter((song) => {
+        const songTitle = song.name.toLowerCase();
+        const search = searchText.toLowerCase();
+        return songTitle.startsWith(search);
+      });
+    },
+    sortSongs(songs, column, direction) {
+      let sortedSongs = [...songs];
 
       if (column === 'title') {
         sortedSongs.sort((a, b) => {
