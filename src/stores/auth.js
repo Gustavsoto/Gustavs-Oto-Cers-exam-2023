@@ -2,21 +2,27 @@ import { defineStore } from 'pinia'
 import router from "../router"
 export const useAuthStore = defineStore('authentication', {
     // STATE MAINĪGIE
-    user: {
-        name: 'NAME',
-        surname: 'SURNAME',
-        code: 'IT1234',
-        favorite_songs: localStorage.favorite_songs ? localStorage.favorite_songs.split(",") : []
+    state: () => {
+        return{
+            user: {
+                name: 'NAME',
+                surname: 'SURNAME',
+                code: 'IT1234',
+                favorite_songs: localStorage.favorite_songs ? localStorage.favorite_songs.split(",") : []
+            },
+            authenticated: false,
+        }
     },
-    authenticated: false,
 
     // GETTERS METODES
-    is_authenticated() {
-        localStorage.authenticated ?? false;
-        return (localStorage.authenticate !== null) ? localStorage.authenticated : this.authenticated;
-    },
-    getFavoriteSongs() {
-        return this.user.favorite_songs;
+    getters: {
+        is_authenticated() {
+            localStorage.authenticated ?? false;
+            return (localStorage.authenticate !== null) ? localStorage.authenticated : this.authenticated;
+        },
+        getFavoriteSongs() {
+            return this.user.favorite_songs;
+        },
     },
 
     // ACTIONS METODES

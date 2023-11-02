@@ -9,7 +9,7 @@ export default {
     computed: {
         loggedIn() {
         const store = useAuthStore();
-        return store.is_authenticated ?? store.authenticated;
+        return store.authenticated;
         }
     }
 }

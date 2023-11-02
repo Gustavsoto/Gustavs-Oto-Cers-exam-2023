@@ -25,10 +25,10 @@
             :class="{ active: sortColumn === 'duration' }"
           >
             Duration
-            <IconCaretUp :class="{ 'flip-vertical': sortColumn === 'title' && titleSortDirection === 'desc' }" v-if="sortColumn === 'duration'" />
+            <IconCaretUp :class="{ 'flip-vertical': sortColumn === 'duration' && durationSortDirection === 'desc' }" v-if="sortColumn === 'duration'" />
           </th>
         </tr>
-        <tr class="song" v-for="(song, index) in sortedSongs" :key="song.id">
+        <tr class="song" v-for="(song, index) in sortedSongs" :key="song.id" @dblclick="selectSong(song)">
           <td id="td-index">
             <IconPlay />
             <span id="txt-index">{{ index + 1 }}</span>
@@ -40,7 +40,7 @@
           <td id="td-artist">{{ getArtists(song.artists) }}</td>
           <td id="td-album">{{ song.album.name || '' }}</td>
           <td id="td-duration">
-            {{ formatDuration(song.duration_ms) }}
+            {{ getTime(song.duration_ms) }}
             <IconHeart :class="{active: true}" />
           </td>
         </tr>
@@ -65,27 +65,17 @@ export default {
     return {
       searchText: '',
       show_favorites: false,
-      sortColumn: '',
+      sortColumn: '', // Default sorting column
       SongsData: songsData,
-      titleSortDirection: 'asc',
-      durationSortDirection: 'asc',
+      sortDirections: {
+        title: 'asc',
+        duration: 'asc',
+      },
     };
   },
   computed: {
-    sortedTitles() {
-      return this.sortSongs('title', this.titleSortDirection);
-    },
-    sortedDurations() {
-      return this.sortSongs('duration', this.durationSortDirection);
-    },
     sortedSongs() {
-      if (this.sortColumn === 'title') {
-        return this.sortedTitles;
-      } else if (this.sortColumn === 'duration') {
-        return this.sortedDurations;
-      } else {
-        return this.SongsData;
-      }
+      return this.sortSongs(this.sortColumn, this.sortDirections[this.sortColumn]);
     },
   },
   methods: {
@@ -112,26 +102,25 @@ export default {
     },
     sortBy(column) {
       if (this.sortColumn === column) {
-        if (column === 'title') {
-          this.titleSortDirection = this.titleSortDirection === 'asc' ? 'desc' : 'asc';
-        } else if (column === 'duration') {
-          this.durationSortDirection = this.durationSortDirection === 'asc' ? 'desc' : 'asc';
-        }
+        this.sortDirections[column] = this.sortDirections[column] === 'asc' ? 'desc' : 'asc';
       } else {
-        this.titleSortDirection = 'asc';
-        this.durationSortDirection = 'asc';
+        this.sortColumn = column;
       }
-      this.sortColumn = column;
     },
     getArtists(artists) {
       return artists.map((artist) => artist.name).join(', ');
     },
-    formatDuration(duration_ms) {
+    getTime(duration_ms) {
       const totalSeconds = Math.floor(duration_ms / 1000);
       const minutes = Math.floor(totalSeconds / 60);
       const seconds = totalSeconds % 60;
       const formattedSeconds = seconds < 10 ? `0${seconds}` : seconds;
       return `${minutes}:${formattedSeconds}`;
+    },
+    selectSong(song) {
+      // Implement logic to play the selected song.
+      // You can use the song object to play it.
+      // You may need to use a global method or a player component to handle song playback.
     },
   },
 };

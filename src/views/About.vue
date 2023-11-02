@@ -11,30 +11,30 @@
             <div class="wrapper-input">
                 <label>NAME</label>
                 <input id="input-name" v-if="editMode" v-model="name"/>
-                <p id="txt-name">John</p>
+                <p id="txt-name" v-if="!editMode">{{ name }}</p>
             </div>
             <div class="wrapper-input">
                 <label>SURNAME</label>
                 <input id="input-surname" v-if="editMode" v-model="surname" />
-                <p id="txt-surname">Smith</p>
+                <p id="txt-surname" v-if="!editMode">{{ surname }}</p>
             </div>
             <div class="wrapper-input">
                 <label>STUDENT CODE</label>
                 <input id="input-code" v-if="editMode" v-model="code" />
-                <p id="txt-code">IT1234</p>
+                <p id="txt-code" v-if="!editMode">{{code}}</p>
             </div>
             <div class="wrapper-songs">
                 <label>FAVORITE SONGS</label>
-                <ul>
-                    <li>
-                        <img id="img-album" src="https://i.scdn.co/image/ab67616d00001e02980c9d288a180838cd12ad24" />
+                <ul v-if="!noFavoriteSongs">
+                    <li v-for="song in favoriteList" :key="song">
+                        <img id="img-album" :src="song.album.images[1].url" />
                         <div class="song-info">
-                            <p id="txt-song" class="song-name">DEEP (feat. Nonô)</p>
-                            <p id="txt-artist" class="song-artists">Example</p>
+                            <p id="txt-song" class="song-name">{{ song.name }}</p>
+                            <p id="txt-artist" class="song-artists">{{ getArtists(song.artists) }}</p>
                         </div>
                     </li>
                 </ul>
-                <div id="txt-empty" class="empty">NO SONGS FOUND</div>
+                <div id="txt-empty" class="empty" v-if="noFavoriteSongs">NO SONGS FOUND</div>
             </div>
         </form>
     </div>
@@ -43,11 +43,19 @@
 import { useAuthStore } from '../stores/auth.js';
 export default {
     data(){
+        const state = useAuthStore();
         return{
             editMode: false,
-            name: 'John',
-            surname: 'Smith',
-            code: 'IT1234'
+            name: state.user.name,
+            surname: state.user.surname,
+            code: state.user.code,
+            favoriteList: state.getFavoriteSongs,
+        }
+    },
+    computed: {
+        noFavoriteSongs() {
+            const fav = useAuthStore();
+            return this.favoriteList.length === 0;
         }
     },
     methods: {
@@ -56,10 +64,14 @@ export default {
         },
         saveInfo(){
             this.editMode = false;
-            useAuthStore.user.name = this.name;
-            useAuthStore.user.surname = this.surname;
-            useAuthStore.user.code = this.code;
-        }
+            const updated = useAuthStore();
+            updated.user.name = this.name;
+            updated.user.surname = this.surname;
+            updated.user.code = this.code;
+        },
+        getArtists(artists) {
+            return artists.map((artist) => artist.name).join(', ');
+        },
     }
     
 
