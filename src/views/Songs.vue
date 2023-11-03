@@ -28,16 +28,16 @@
             <IconCaretUp :class="{ 'flip-vertical': sortColumn === 'duration' && sortDirections.duration === 'desc' }" v-if="sortColumn === 'duration'" />
           </th>
         </tr>
-        <tr class="song" v-for="(song, index) in filteredAndSortedSongs" :key="song.id" @dblclick="selectSong(song)">
+        <tr class="song" v-for="(song, index) in filteredAndSortedSongs" :key="song.id" @dblclick="selectSong(song)" :class="{ active: isNowPlaying(song) }">
           <td id="td-index">
             <IconPlay />
             <span id="txt-index">{{ index + 1 }}</span>
           </td>
-          <td id="td-title">
+          <td id="td-title" :class="{ active: isNowPlaying(song) }">
             <img :src="song.album.images[1].url" />
             {{ song.name }}
           </td>
-          <td id="td-artist">{{ getArtists(song.artists) }}</td>
+          <td id="td-artist" :class="{ active: isNowPlaying(song) }">{{ getArtists(song.artists) }}</td>
           <td id="td-album">{{ song.album.name || '' }}</td>
           <td id="td-duration">
             {{ getTime(song.duration_ms) }}
@@ -55,6 +55,7 @@ import IconCaretUp from '../components/icons/IconCaretUp.vue';
 import IconPlay from '../components/icons/IconPlay.vue';
 import IconHeart from '../components/icons/iconHeart.vue';
 import { useAuthStore } from '../stores/auth';
+import { usePlayerStore } from '@/stores/player';
 
 export default {
   components: {
@@ -92,6 +93,10 @@ export default {
         const songIdString = String(song.id);
         return auth.getFavoriteSongs.includes(songIdString);
       };
+    },
+    isNowPlaying() {
+      const player = usePlayerStore();
+      return (song) => song.id === player.getNowPlayingSongId;
     },
   },
   methods: {
@@ -152,10 +157,18 @@ export default {
       return `${minutes}:${formattedSeconds}`;
     },
     selectSong(song) {
-      // Implement logic to play the selected song.
-      // You can use the song object to play it.
-      // You may need to use a global method or a player component to handle song playback.
-    },
+            const player = usePlayerStore();
+            this.click++;
+            if (this.click === 1) {
+                this.timer = setTimeout(() => {
+                    this.click = 0;
+                }, 500);
+            } else {
+                clearTimeout(this.timer);
+                player.setNowPlaying(song);
+                this.click = 0;
+            }
+        },
   },
 };
 </script>
