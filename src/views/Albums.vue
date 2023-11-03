@@ -3,22 +3,92 @@
         <div class="wrapper-header">
             <h1>ALBUMS</h1>
             <div class="settings">
-                <button id="btn-grid"></button>
-                <button id="btn-list"></button>
+                <button id="btn-grid" :class="{ active: isGrid }" @click="toggleGrid(true)">
+                    <IconGrid />
+                </button>
+                <button id="btn-list" :class="{ active: !isGrid }" @click="toggleGrid(false)">
+                    <IconList />
+                </button>
             </div>
         </div>
-        <ul id="list-albums">
-            <li class="album">
-                <img id="img-album" src="https://i.scdn.co/image/ab67616d00001e02980c9d288a180838cd12ad24" />
+        <ul id="list-albums" :class="{ grid: isGrid }">
+            <li class="album" v-for="album in albums" :key="album.id" @click="selectAlbum(album.id)" :class="{ active: album.id === getCurrentAlbumId }">
+                <img id="img-album" :src="album.images[1].url" />
                 <div class="album-info">
-                    <h4 id="txt-album-name">We May Grow Old But We Never Grow Up</h4>
-                    <p id="txt-album-artists">Example</p>
+                    <h4 id="txt-album-name">{{ album.name }}</h4>
+                    <p id="txt-album-artists">{{ getArtists(album.artists) }}</p>
                     <div class="album-year">
-                        <p id="txt-album-year">2022</p>
-                        <p id="txt-album-tracks">2</p>
+                        <p id="txt-album-year">{{ getYear(album.release_date) }}</p>
+                        <p id="txt-album-tracks">{{ getTrackCount(album.tracks.length) }}</p>
                     </div>
                 </div>
             </li>
         </ul>
     </div>
 </template>
+
+<script>
+import IconGrid from '../components/icons/IconGrid.vue'
+import IconList from '../components/icons/IconList.vue'
+import { usePlayerStore } from '@/stores/player'
+import songsData from '../data/songs'
+
+export default {
+    components: {
+        IconGrid,
+        IconList
+    },
+    data() {
+        return {
+            isGrid: true,
+            click: 0,
+        }
+    },
+    methods: {
+        toggleGrid(value) {
+            this.isGrid = value;
+        },
+        selectAlbum(albumID) {
+            const player = usePlayerStore();
+            this.click++;
+            let timer;
+            if (this.click === 1) {
+                timer = setTimeout(() => {
+                    this.click = 0;
+                }, 500);
+            } else {
+                clearTimeout(timer);
+                player.setPlaylist(this.albums[albumID].tracks);
+                player.setNowPlaying(this.albums[albumID].tracks[0]);
+                this.click = 0;
+            }
+        },
+        getArtists(artists) {
+            return artists.map(artist => artist.name).join(', ');
+        },
+        getYear(release_date) {
+            const year = new Date(release_date);
+            return year.getFullYear();
+        },
+        getTrackCount(trackCount) {
+            return trackCount > 1 ? `${trackCount} songs` : `${trackCount} song`;
+        },
+    },
+    computed: {
+        albums() {
+            return songsData.reduce((accumulator, currentSong) => {
+                accumulator[currentSong.album.id] = accumulator[currentSong.album.id] || {
+                    ...currentSong.album,
+                    tracks: []
+                };
+                accumulator[currentSong.album.id].tracks.push(currentSong);
+                return accumulator;
+            }, Object.create(null));
+        },
+        getCurrentAlbumId() {
+            const album  = usePlayerStore();
+            return album.getNowPlayingAlbumID;
+        }
+    }
+}
+</script>

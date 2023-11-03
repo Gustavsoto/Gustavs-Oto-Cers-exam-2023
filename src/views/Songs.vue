@@ -30,8 +30,10 @@
         </tr>
         <tr class="song" v-for="(song, index) in filteredAndSortedSongs" :key="song.id" @dblclick="selectSong(song)" :class="{ active: isNowPlaying(song) }">
           <td id="td-index">
-            <IconPlay />
-            <span id="txt-index">{{ index + 1 }}</span>
+            <span v-if="isNowPlaying(song)">
+              <IconPlay :class="{ active: isNowPlaying(song) }"/>
+            </span> 
+            <span id="txt-index" v-if="!isNowPlaying(song)">{{ index + 1 }}</span>
           </td>
           <td id="td-title" :class="{ active: isNowPlaying(song) }">
             <img :src="song.album.images[1].url" />
@@ -95,8 +97,8 @@ export default {
       };
     },
     isNowPlaying() {
-      const player = usePlayerStore();
-      return (song) => song.id === player.getNowPlayingSongId;
+      const sng = usePlayerStore();
+      return (song) => song.id === sng.getNowPlayingSongId;
     },
   },
   methods: {
