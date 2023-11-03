@@ -41,7 +41,7 @@
           <td id="td-album">{{ song.album.name || '' }}</td>
           <td id="td-duration">
             {{ getTime(song.duration_ms) }}
-            <IconHeart :class="{active: true}" />
+            <IconHeart :class="{ active: isFavorite(song) }" @click="toggleFavoriteStatus(song)" />
           </td>
         </tr>
       </table>
@@ -54,6 +54,7 @@ import songsData from '../data/songs.js';
 import IconCaretUp from '../components/icons/IconCaretUp.vue';
 import IconPlay from '../components/icons/IconPlay.vue';
 import IconHeart from '../components/icons/iconHeart.vue';
+import { useAuthStore } from '../stores/auth';
 
 export default {
   components: {
@@ -67,6 +68,7 @@ export default {
       show_favorites: false,
       sortColumn: '',
       SongsData: songsData,
+      activeHeartStatus: {},
       sortDirections: {
         title: 'asc',
         duration: 'asc',
@@ -74,9 +76,22 @@ export default {
     };
   },
   computed: {
-    filteredAndSortedSongs() {
-      let filteredSongs = this.filterSongs(this.SongsData, this.searchText);
-      return this.sortSongs(filteredSongs, this.sortColumn, this.sortDirections[this.sortColumn]);
+  filteredAndSortedSongs() {
+    let filteredSongs = this.filterSongs(this.SongsData, this.searchText);
+
+    if (this.show_favorites) {
+      filteredSongs = filteredSongs.filter((song) => this.isFavorite(song));
+    }
+    const sortedSongs = this.sortSongs(filteredSongs, this.sortColumn, this.sortDirections[this.sortColumn]);
+
+    return sortedSongs;
+  },
+    isFavorite() {
+      const auth = useAuthStore();
+      return (song) => {
+        const songIdString = String(song.id);
+        return auth.getFavoriteSongs.includes(songIdString);
+      };
     },
   },
   methods: {
@@ -85,6 +100,17 @@ export default {
     },
     toggleFavorites() {
       this.show_favorites = !this.show_favorites;
+    },
+    isActiveHeart(song) {
+      const songIdString = String(song.id);
+      const favoriteSongs = useAuthStore.getFavoriteSongs || [];
+      return favoriteSongs.includes(songIdString);
+    },
+    toggleFavoriteStatus(song) {
+      const songIdString = String(song.id);
+      const auth = useAuthStore();
+      auth.toggleFavorite(songIdString);
+      this.activeHeartStatus[song.id] = !this.activeHeartStatus[song.id];
     },
     filterSongs(songs, searchText) {
       return songs.filter((song) => {

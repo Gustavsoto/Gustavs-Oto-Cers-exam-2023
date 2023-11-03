@@ -26,21 +26,22 @@
             <div class="wrapper-songs">
                 <label>FAVORITE SONGS</label>
                 <ul v-if="!noFavoriteSongs">
-                    <li v-for="song in favoriteList" :key="song">
-                        <img id="img-album" :src="song.album.images[1].url" />
-                        <div class="song-info">
-                            <p id="txt-song" class="song-name">{{ song.name }}</p>
-                            <p id="txt-artist" class="song-artists">{{ getArtists(song.artists) }}</p>
-                        </div>
+                    <li v-for="song in sortFavorites" :key="song.id">
+                    <img id="img-album" :src="song.album.images[1].url" />
+                    <div class="song-info">
+                        <p id="txt-song" class="song-name">{{ song.name }}</p>
+                        <p id="txt-artist" class="song-artists">{{ getArtists(song.artists) }}</p>
+                    </div>
                     </li>
                 </ul>
-                <div id="txt-empty" class="empty" v-if="noFavoriteSongs">NO SONGS FOUND</div>
+                <div id="txt-empty" class="empty" v-if="favoriteListFiltered.length === 0">NO SONGS FOUND</div>
             </div>
         </form>
     </div>
 </template>
 <script>
 import { useAuthStore } from '../stores/auth.js';
+import songsData from '../data/songs.js';
 export default {
     data(){
         const state = useAuthStore();
@@ -49,6 +50,7 @@ export default {
             name: state.user.name,
             surname: state.user.surname,
             code: state.user.code,
+            songsData: songsData,
             favoriteList: state.getFavoriteSongs,
         }
     },
@@ -56,7 +58,17 @@ export default {
         noFavoriteSongs() {
             const fav = useAuthStore();
             return this.favoriteList.length === 0;
-        }
+        },
+        favoriteListFiltered() {
+            const favoriteIds = this.favoriteList.map((song) => song.id);
+            const filteredSongs = songsData.filter((song) => favoriteIds.includes(song.id));
+            return filteredSongs;
+        },
+        sortFavorites() {
+            return this.songsData.filter((song) =>
+            this.favoriteList.includes(String(song.id))
+        );
+    },
     },
     methods: {
         toggleEditMode(){
